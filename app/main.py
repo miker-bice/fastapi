@@ -31,14 +31,26 @@ async def root():
 @app.get("/posts")
 async def get_posts():
     cursor.execute("""SELECT * FROM posts;""")
-    results = cursor.fetchall()
-    return {"data": results}
+    posts = cursor.fetchall()
+
+    return {"data": posts}
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
 async def create_post(post: PostSchema):
-    cursor.execute("""INSERT INTO posts (title, content, is_published) VALUES (%s, %s, %s) RETURNING *""", (post.title, post.content, post.is_published))
+    cursor.execute("""INSERT INTO posts (title, content, is_published) VALUES (%s, %s, %s) RETURNING *;""", (post.title, post.content, post.is_published))
     new_post = cursor.fetchone()
     connection.commit()
     
     return {"data": new_post}
+
+
+@app.get("/posts/{post_id}")
+async def get_post(post_id: int):
+    cursor.execute("""SELECT * FROM posts WHERE id = %s;""", (str(post_id)))
+    post = cursor.fetchone()
+
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
+
+    return {"data": post}
