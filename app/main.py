@@ -1,11 +1,19 @@
-from fastapi import FastAPI, Response, status, HTTPException
-from pydantic import BaseModel
-from typing import Optional
-import psycopg2
-from psycopg2.extras import RealDictCursor
 import time
+import psycopg2
+from fastapi import FastAPI, Response, status, HTTPException, Depends
+from pydantic import BaseModel
+from psycopg2.extras import RealDictCursor
+from sqlalchemy.orm import Session
+from . import models
+from .database import engine, get_db
+
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# Dependency
+
 
 class PostSchema(BaseModel):
     title: str
@@ -23,9 +31,15 @@ while True:
         print(f"Error! {error}")
         time.sleep(3)
 
+
 @app.get("/")
 async def root():
     return {"message": "Hello this is HOMIEZZ!"}
+
+
+@app.get("/orm")
+async def test_posts(db: Session = Depends(get_db)):
+    return {"data": "sample data"}
 
 
 @app.get("/posts")
