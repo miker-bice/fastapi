@@ -37,15 +37,11 @@ async def root():
     return {"message": "Hello this is HOMIEZZ!"}
 
 
-@app.get("/orm")
-async def test_posts(db: Session = Depends(get_db)):
-    return {"data": "sample data"}
-
-
 @app.get("/posts")
-async def get_posts():
-    cursor.execute("""SELECT * FROM posts""")
-    posts = cursor.fetchall()
+async def get_posts(db: Session = Depends(get_db)):
+    # cursor.execute("""SELECT * FROM posts""")
+    # posts = cursor.fetchall()
+    posts = db.query(models.Post).all()
 
     return {"data": posts}
 
@@ -62,11 +58,16 @@ async def get_post(post_id: int):
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-async def create_post(post: PostSchema):
-    cursor.execute("""INSERT INTO posts (title, content, is_published) VALUES (%s, %s, %s) RETURNING *""", (post.title, post.content, post.is_published))
-    new_post = cursor.fetchone()
-    connection.commit()
-    
+async def create_post(post: PostSchema, db: Session = Depends(get_db)):
+    # cursor.execute("""INSERT INTO posts (title, content, is_published) VALUES (%s, %s, %s) RETURNING *""", (post.title, post.content, post.is_published))
+    # new_post = cursor.fetchone()
+    # connection.commit()
+
+    new_post = models.Post(**post.model_dump())
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
+
     return {"data": new_post}
 
 
