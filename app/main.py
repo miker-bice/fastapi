@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from . import models, schemas
 from .database import engine, get_db
 from typing import List
-
+from .utils import hash_password
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -67,3 +67,18 @@ def update_post(post_id: int, post: schemas.PostCreate, db: Session = Depends(ge
     db.commit()
 
     return post_query.first()
+
+
+# FOR USERS
+
+@app.post("/users", status_code=status.HTTP_201_CREATED, response_model=schemas.UserCreateResponse)
+async def create_user(user: schemas.UserCreateSchema, db: Session = Depends(get_db)):
+    # password hashing
+    hashed_password = hash_password(user.password)
+    user.password = hashed_password
+    new_user = models.User(**user.model_dump())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user 
