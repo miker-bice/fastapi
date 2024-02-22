@@ -18,6 +18,7 @@ async def create_user(user: schemas.UserCreateSchema, db: Session = Depends(get_
     db.add(new_user)
     try:
         db.commit()
+    # Raise this error if the email given is already used
     except IntegrityError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{user.email} is already taken")
 
