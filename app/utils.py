@@ -10,3 +10,11 @@ def hash_password(password:str) -> str:
     hashed_password = pwd_context.hash(password)
 
     return hashed_password
+
+def verify(raw_password, hashed_password) -> bool:
+    '''
+    returns a boolean
+    raw_password:str - raw input password by the user
+    hashed_password:str - hashed password
+    '''
+    return pwd_context.verify(raw_password, hashed_password)
