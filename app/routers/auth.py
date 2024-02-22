@@ -11,7 +11,11 @@ async def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Ses
     user = db.query(models.User).filter(models.User.email == user_credentials.username).first()
 
     if not user:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="invalid credentials")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     is_password_valid = utils.verify(user_credentials.password, user.password)
 

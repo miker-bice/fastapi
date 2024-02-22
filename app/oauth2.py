@@ -26,7 +26,6 @@ def create_access_token(data: dict):
 # decode the JWT
 def verify_access_token(token: str, credentials_exception):
     try:
-        print(token)
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("user_id")
 
@@ -34,15 +33,18 @@ def verify_access_token(token: str, credentials_exception):
             raise credentials_exception
         
         token_data = schemas.TokenDataSchema(id=user_id)
-    except JWTError as error:
-        print(error)
+    except JWTError:
         raise credentials_exception
     
     return token_data
 
 # get the user for a protected endpoint
 def get_current_user(token: str = Depends(oauth_schema)):
-    credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="could not validate credentials", headers={"WWW-Authenticate": "Bearer"})
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
 
     token_data = verify_access_token(token, credentials_exception)
     return token_data

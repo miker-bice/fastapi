@@ -42,4 +42,4 @@ class TokenSchema(BaseModel):
     token_type: str
 
 class TokenDataSchema(BaseModel):
-    id: str
+    id: int
