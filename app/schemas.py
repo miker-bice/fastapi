@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
 
-
+# FOR POST
 class PostBase(BaseModel):
     title: str
     content: str
@@ -18,14 +18,21 @@ class PostResponse(PostBase):
     class Config:
         from_attributes = True
 
-
+# FOR USER
 class UserCreateSchema(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=50)
 
 class UserCreateResponse(BaseModel):
+    id: int
     email: EmailStr
     created_at: datetime
 
     class Config:
         from_attributes = True
+
+
+# FOR AUTHENTICATION
+class LoginSchema(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=50)
