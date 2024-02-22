@@ -2,6 +2,7 @@ from fastapi import Response, status, HTTPException, Depends, APIRouter
 from ..database import get_db
 from sqlalchemy.orm import Session
 from .. import models, schemas, utils
+from sqlalchemy.exc import IntegrityError
 
 router = APIRouter(
     prefix='/users',
@@ -15,7 +16,11 @@ async def create_user(user: schemas.UserCreateSchema, db: Session = Depends(get_
     user.password = hashed_password
     new_user = models.User(**user.model_dump())
     db.add(new_user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{user.email} is already taken")
+
     db.refresh(new_user)
 
     return new_user 
