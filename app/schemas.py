@@ -42,9 +42,14 @@ class PostResponse(PostBase):
     id: int
     created_at: datetime
     owner_id: int
-    owner: UserCreateResponse
+    owner: UserCreateResponse #this references the UserCreateResponse so that it includes all its fields
 
     # this is the orm mode
     class Config:
         from_attributes = True
 
+
+# FOR VOTES
+class VoteSubmitSchema(BaseModel):
+    post_id: int
+    direction: bool
