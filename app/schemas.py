@@ -11,6 +11,7 @@ class UserCreateResponse(BaseModel):
     email: EmailStr
     created_at: datetime
 
+    # this is the orm_mode
     class Config:
         from_attributes = True
  
@@ -43,6 +44,7 @@ class PostResponse(PostBase):
     owner_id: int
     owner: UserCreateResponse
 
+    # this is the orm mode
     class Config:
         from_attributes = True
 
