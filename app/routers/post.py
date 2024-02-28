@@ -1,8 +1,9 @@
 from fastapi import Response, status, HTTPException, Depends, APIRouter
+from sqlalchemy import func, desc, true
 from ..database import get_db
 from sqlalchemy.orm import Session
 from .. import models, schemas, oauth2
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 router = APIRouter(
     prefix='/posts',
@@ -14,17 +15,21 @@ DEFAULT_RESPONSE_LIMIT = 10
 DEFAULT_SKIP_LIMIT = 0
 
 
-# response_model is List because it returns multiple results
-@router.get("", response_model=List[schemas.PostResponse])
-async def get_posts(db: Session = Depends(get_db), current_user: dict = Depends(oauth2.get_current_user), limit: int = DEFAULT_RESPONSE_LIMIT, skip:int = DEFAULT_SKIP_LIMIT, search: Optional[str] = ""):
-    posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+# @router.get("", response_model=List[schemas.PostResponse])
+@router.get("", response_model=List[schemas.PostOutVotesSchema])
+async def get_posts(db: Session = Depends(get_db), current_user: dict = Depends(oauth2.get_current_user), limit: int = DEFAULT_RESPONSE_LIMIT, offset:int = DEFAULT_SKIP_LIMIT, search: Optional[str] = ""):
+    query = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id)
 
-    return posts
+    new_results = query.filter(models.Post.title.contains(search)).limit(limit).offset(offset).all()
+
+    return new_results
 
 
-@router.get("/{post_id}", response_model=schemas.PostResponse)
+@router.get("/{post_id}", response_model=schemas.PostOutVotesSchema)
 async def get_post(post_id: int, db: Session = Depends(get_db), current_user: dict = Depends(oauth2.get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == post_id).first()
+
+    post = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.id == post_id).first()
 
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")

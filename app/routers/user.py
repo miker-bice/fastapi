@@ -11,17 +11,18 @@ router = APIRouter(
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.UserCreateResponse)
 async def create_user(user: schemas.UserCreateSchema, db: Session = Depends(get_db)):
+    # check if the email is already taken
+    existing_user = db.query(models.User).filter(models.User.email == user.email).first()
+
+    if existing_user:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"{user.email} is already taken")
+
     # password hashing
     hashed_password = utils.hash_password(user.password)
     user.password = hashed_password
     new_user = models.User(**user.model_dump())
     db.add(new_user)
-    try:
-        db.commit()
-    # Raise this error if the email given is already used
-    except IntegrityError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{user.email} is already taken")
-
+    db.commit()
     db.refresh(new_user)
 
     return new_user 

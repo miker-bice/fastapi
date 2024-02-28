@@ -48,6 +48,10 @@ class PostResponse(PostBase):
     class Config:
         from_attributes = True
 
+class PostOutVotesSchema(BaseModel):
+    Post: PostResponse
+    votes: int
+
 
 # FOR VOTES
 class VoteSubmitSchema(BaseModel):
