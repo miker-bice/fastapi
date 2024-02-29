@@ -3,3 +3,5 @@ pydantic==2.6.3
 pydantic_settings==2.2.1
 python_jose==3.3.0
 SQLAlchemy==2.0.27
+fastapi
+uvicorn
