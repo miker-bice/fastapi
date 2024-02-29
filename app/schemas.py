@@ -44,7 +44,6 @@ class PostResponse(PostBase):
     owner_id: int
     owner: UserCreateResponse #this references the UserCreateResponse so that it includes all its fields
 
-    # this is the orm mode
     class Config:
         from_attributes = True
 
